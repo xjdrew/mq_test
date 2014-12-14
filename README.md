@@ -1,13 +1,13 @@
 * test lock queue
 
 ```
-make test_lock
+make test_lock_queue
 ```
 
-* test cas queue
+* test cas array
 
 ```
-make test_cas
+make test_cas_array
 ```
 
 * test all

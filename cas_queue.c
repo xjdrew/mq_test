@@ -1,60 +1,67 @@
 #include <stdlib.h>
 #include <assert.h>
-#include <stdint.h>
-#include <stdbool.h>
 
-#include "cas_queue.h"
+#include "lock_queue.h"
 
-#define MAX_MQ_LEN 0x10000
-#define GP(p) ((p) % MAX_MQ_LEN)
-
+#define INVALID_MEM_ADDR ((void*)-1)
 struct queue {
-    uint32_t head;
-    uint32_t tail;
-    struct message **msgs;
-    bool *flag;
+    struct message *head;
+    struct message *tail;
+    int lock;
 };
 
 struct queue *Q;
+
 void qinit() {
     struct queue *q = calloc(1, sizeof(*q));
-    q->msgs = calloc(MAX_MQ_LEN, sizeof(struct message*));
-    q->flag = calloc(MAX_MQ_LEN, sizeof(bool));
     Q = q;
 }
 
 void qpush(struct message *m) {
+    assert(m->next == NULL);
+
     struct queue *q= Q;
-
-    uint32_t tail = GP(__sync_fetch_and_add(&q->tail,1));
-    // The thread would suspend here, and the q->msgs[tail] indexs last version ,
-    // but the msg tail is increased.
-    // So we set q->flag[tail] after changing q->msgs[tail].
-    q->msgs[tail] = m;
-    q->flag[tail] = true;
-    __sync_synchronize();
+    struct message* tail;
+    do {
+        tail = q->tail;
+        if(tail) {
+            tail->next = INVALID_MEM_ADDR;
+        }
+        if(!__sync_bool_compare_and_swap(&q->tail, tail, m)) {
+            continue;
+        }
+        if(tail) {
+            if(!__sync_bool_compare_and_swap(&tail->next, INVALID_MEM_ADDR, m)) {
+                // tail is poped
+                assert(q->head == NULL || q->head == INVALID_MEM_ADDR);
+                q->head = m;
+            }
+        } else {
+            // queue is empty
+            assert(q->head == NULL);
+            q->head = m;
+        }
+        __sync_synchronize();
+        break;
+    } while(1);
 }
-
 
 struct message *
 qpop() {
     struct queue *q = Q;
-    uint32_t head =  q->head;
-    uint32_t head_ptr = GP(head);
-    if (head_ptr == GP(q->tail)) {
-        return NULL;
-    }
+    struct message *head;
+    do {
+        head = q->head;
+        if(!head) {
+            break;
+        }
+        if(__sync_bool_compare_and_swap(&q->head, head, head->next)) {
+            __sync_bool_compare_and_swap(&q->head, INVALID_MEM_ADDR, q->tail);
+            __sync_bool_compare_and_swap(&q->tail, head, NULL);
+            head->next = NULL;
+            break;
+        }
+    } while(1);
 
-    // Check the flag first, if the flag is false, the pushing may not complete.
-    if(!q->flag[head_ptr]) {
-        return NULL;
-    }
-    
-    struct message *m = q->msgs[head_ptr];
-    if (!__sync_bool_compare_and_swap(&q->head, head, head+1)) {
-        return NULL;
-    }
-    q->flag[head_ptr] = false;
-    return m;
+    return head;
 }
-

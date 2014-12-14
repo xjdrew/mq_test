@@ -1,13 +1,9 @@
-#ifndef LOCK_QUEUE_H
-#define LOCK_QUEUE_H
-#include <stdint.h>
-
+#ifndef CAS_QUEUE_H
+#define CAS_QUEUE_H
 struct message {
-    struct message *next;
+    void *p;
 };
-
 void qinit();
 void qpush(struct message *m);
 struct message* qpop();
 #endif
-

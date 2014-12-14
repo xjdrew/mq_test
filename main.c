@@ -5,6 +5,8 @@
 
 #ifdef LOCK_QUEUE
 #include "lock_queue.h"
+#elif CAS_ARRAY
+#include "cas_array.h"
 #else
 #include "cas_queue.h"
 #endif
