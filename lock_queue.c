@@ -23,7 +23,6 @@ void qpush(struct message *m) {
     struct queue *q= Q;
 
     LOCK(q)
-    assert(m->next == NULL);
     if(q->tail) {
         q->tail->next = m;
         q->tail = m;
@@ -42,7 +41,6 @@ qpop() {
     if(head) {
         q->head = head->next;
         if(q->head == NULL) {
-            assert(head == q->tail);
             q->tail = NULL;
         }
         head->next = NULL;
