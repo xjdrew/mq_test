@@ -3,19 +3,30 @@
 
 #include <pthread.h>
 
+#ifdef LOCK_QUEUE
 #include "lock_queue.h"
+#else
+#include "cas_queue.h"
+#endif
 
 #define WORKERS 2
 #define MESSAGES 700 * 10000
 
+struct message *msgs;
+
 void* worker(void *arg) {
-    int count = (int) arg;
-    struct message *m = calloc(1, sizeof(*m));
-    for (int i=0; i< count; i++) {
-        qpush(m);
-        assert(qpop() != NULL);
+    int index = (int)arg;
+    int count = (MESSAGES/WORKERS);
+    int offset = count * index;
+    int start = offset;
+    int end = count + offset;
+    for (int i=start; i< end; i++) {
+        qpush(&msgs[i]);
+        while(qpop()) {
+            break;
+        }
     }
-    printf("%d finished\n", count);
+    printf("thread %d finish %d msgs\n", index, count);
 }
 
 int main() {
@@ -23,9 +34,10 @@ int main() {
 
     pthread_t threads[WORKERS];
     int count = (MESSAGES/WORKERS);
+    msgs = calloc(count * MESSAGES, sizeof(struct message));
 
     for (int i=0; i<WORKERS; i++) {
-        assert(pthread_create(&threads[i], NULL, worker, (void*)count)==0);
+        assert(pthread_create(&threads[i], NULL, worker, (void*)i)==0);
     }
     for (int i=0; i<WORKERS; i++) {
         pthread_join(threads[i], NULL);
