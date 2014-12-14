@@ -34,7 +34,7 @@ int main() {
 
     pthread_t threads[WORKERS];
     int count = (MESSAGES/WORKERS);
-    msgs = calloc(count * MESSAGES, sizeof(struct message));
+    msgs = calloc(count * WORKERS, sizeof(struct message));
 
     for (int i=0; i<WORKERS; i++) {
         assert(pthread_create(&threads[i], NULL, worker, (void*)i)==0);

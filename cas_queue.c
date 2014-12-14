@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 #include "cas_queue.h"
