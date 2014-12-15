@@ -3,6 +3,7 @@
 
 #include "lock_queue.h"
 
+/*
 #define INVALID_MEM_ADDR ((void*)-1)
 struct queue {
     struct message *head;
@@ -65,3 +66,4 @@ qpop() {
 
     return head;
 }
+*/
