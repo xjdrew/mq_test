@@ -14,7 +14,7 @@
 #include "cas_queue.h"
 #endif
 
-#define WORKERS 10
+#define WORKERS 2
 #define MESSAGES 700 * 10000
 
 struct message *msgs;

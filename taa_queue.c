@@ -12,7 +12,6 @@
 struct queue {
     struct message *head;
     struct message *tail;
-    int lock;
 };
 
 struct queue *Q;
@@ -34,7 +33,6 @@ void qpush(struct message *m) {
             if((ok = cas(&q->tail, tail, m))) {
                 assert(q->head == NULL);
                 q->head = m;
-                __sync_synchronize();
             }
         } else {
             // avoid pop tail
@@ -66,7 +64,6 @@ qpop() {
         } else {
             if(taa(head)) {
                 if((ok = cas(&q->head, head, head->next))) {
-                    __sync_synchronize();
                     cas(&q->tail, head, NULL);
                     head->next = NULL;
                 }
