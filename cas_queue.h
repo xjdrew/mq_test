@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 struct message {
+    int v;
     struct message *next;
 };
 

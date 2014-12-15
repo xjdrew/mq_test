@@ -2,6 +2,7 @@
 #define LOCK_QUEUE_H
 
 struct message {
+    int v;
     struct message *next;
 };
 
