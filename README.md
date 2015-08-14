@@ -1,18 +1,28 @@
+# build
+```
+make
+```
+
+# run test
 * test lock queue
 
 ```
-make test_lock_queue
+./lock_test [threadnum]
 ```
 
 * test cas array
 
 ```
-make test_cas_array
+./casa_test [threadnum]
 ```
 
-* test all
+* test taa queue
 
 ```
-make
+./taa_test [threadnum]
 ```
 
+* test pthread lock queue
+```
+./pthread_lock_test [threadnum]
+```
