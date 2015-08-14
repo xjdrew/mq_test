@@ -1,6 +1,6 @@
 #CFLAGS=-Ofast -std=c99 -pthread -w 
 CFLAGS=-O0 -g -std=c99 -pthread -w 
-all:lock_queue cas_array taa_queue
+all:lock_queue cas_array taa_queue pthread_lock_queue
 test:test_lock_queue test_cas_array test_taa_queue
 
 lock_queue:
@@ -8,6 +8,12 @@ lock_queue:
 
 test_lock_queue: lock_queue
 	time ./lock_test
+
+pthread_lock_queue:
+	gcc $(CFLAGS) -DPTHREAD_LOCK_QUEUE -o pthread_lock_test main.c pthread_lock_queue.c 
+
+test_pthread_lock_queue: pthread_lock_queue
+	time ./pthread_lock_test
 
 cas_array:
 	gcc $(CFLAGS) -DCAS_ARRAY -o casa_test main.c cas_array.c 

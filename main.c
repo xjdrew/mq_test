@@ -10,12 +10,15 @@
 #include "cas_array.h"
 #elif TAA_QUEUE
 #include "taa_queue.h"
+#elif PTHREAD_LOCK_QUEUE
+#include "pthread_lock_queue.h"
 #else
 #include "cas_queue.h"
 #endif
 
-#define WORKERS 2
+//#define WORKERS 20
 #define MESSAGES 700 * 10000
+int WORKERS;
 
 struct message *msgs;
 int *checker;
@@ -45,7 +48,14 @@ void* worker(void *arg) {
     printf("thread %d finish,push %d msgs, pop %d msgs\n", index, pushed, poped);
 }
 
-int main() {
+int main(int argc, char** argv) {
+    if(argc > 1) {
+        WORKERS = atoi(argv[1]);
+    }
+    if(!WORKERS) {
+        WORKERS = 2;
+    }
+
     qinit();
 
     pthread_t threads[WORKERS];
